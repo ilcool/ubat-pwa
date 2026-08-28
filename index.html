@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#7f1d1d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Peringatan Ubat">
+
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+
+<title>Peringatan Ubat Anda</title>
+
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#020617;
+    color:#f8fafc;
+    min-height:100vh;
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+
+header{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:linear-gradient(100deg,#020617,#4c0519,#991b1b);
+    border-bottom:1px solid rgba(244,63,94,.35);
+    box-shadow:0 8px 30px rgba(0,0,0,.35);
+}
+.header-inner{
+    max-width:1100px;
+    margin:auto;
+    padding:16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+}
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+.brand-icon{
+    width:45px;
+    height:45px;
+    border-radius:13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(244,63,94,.15);
+    border:1px solid rgba(244,63,94,.4);
+    font-size:22px;
+}
+h1{font-size:21px;margin:0 0 4px}
+.subtitle{font-size:12px;color:#fecdd3}
+.clock-box{
+    text-align:right;
+    background:rgba(2,6,23,.6);
+    border:1px solid rgba(244,63,94,.25);
+    border-radius:10px;
+    padding:7px 11px;
+}
+.clock{font-family:monospace;font-weight:bold}
+.date{font-size:10px;color:#fda4af;margin-top:2px}
+
+.container{
+    width:100%;
+    max-width:1100px;
+    margin:auto;
+    padding:22px 16px 50px;
+}
+
+.warning{
+    background:#1e293b;
+    border:1px solid #334155;
+    border-left:4px solid #f43f5e;
+    border-radius:0 12px 12px 0;
+    padding:14px;
+    font-size:12px;
+    line-height:1.6;
+    margin-bottom:20px;
+    color:#fecdd3;
+}
+.warning strong{color:white}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:20px;
+}
+.card{
+    background:rgba(30,41,59,.85);
+    border:1px solid #334155;
+    border-radius:13px;
+    padding:16px;
+}
+.stat{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+.stat-label{
+    color:#94a3b8;
+    font-size:11px;
+}
+.stat-number{
+    font-size:25px;
+    font-weight:bold;
+    margin-top:5px;
+}
+.stat-icon{
+    width:40px;
+    height:40px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#450a0a;
+    color:#fb7185;
+    font-size:19px;
+}
+.green{color:#34d399}
+
+.add-btn{
+    border:1px solid rgba(244,63,94,.4);
+    border-radius:13px;
+    background:linear-gradient(135deg,#be123c,#7f1d1d);
+    color:white;
+    font-weight:bold;
+    font-size:14px;
+    min-height:100%;
+    padding:15px;
+    transition:.2s;
+}
+.add-btn:hover{transform:translateY(-2px)}
+
+.section{
+    background:rgba(15,23,42,.9);
+    border:1px solid #334155;
+    border-radius:16px;
+    overflow:hidden;
+}
+.section-head{
+    padding:17px;
+    border-bottom:1px solid #334155;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+.section-title{
+    font-size:17px;
+    font-weight:bold;
+}
+.controls{
+    display:flex;
+    gap:8px;
+}
+.search,.filter{
+    background:#020617;
+    border:1px solid #334155;
+    color:white;
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:12px;
+    outline:none;
+}
+.search{width:220px}
+.search:focus,.filter:focus{
+    border-color:#e11d48;
+    box-shadow:0 0 0 2px rgba(225,29,72,.2);
+}
+
+.medicine-list{
+    padding:16px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:13px;
+}
+.medicine{
+    position:relative;
+    overflow:hidden;
+    background:#1e293b;
+    border:1px solid #334155;
+    border-radius:13px;
+    padding:16px;
+}
+.medicine.taken{
+    border-color:#047857;
+    background:#052e2b;
+}
+.medicine::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:4px;
+    background:#e11d48;
+}
+.medicine.taken::before{background:#10b981}
+.med-head{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+}
+.med-name{
+    font-size:16px;
+    font-weight:bold;
+}
+.badge{
+    display:inline-block;
+    margin-top:6px;
+    padding:4px 7px;
+    border-radius:20px;
+    font-size:10px;
+    border:1px solid #475569;
+    color:#cbd5e1;
+}
+.status{
+    white-space:nowrap;
+    font-size:10px;
+    padding:5px 8px;
+    border-radius:20px;
+    border:1px solid #881337;
+    background:#4c0519;
+    color:#fda4af;
+    height:max-content;
+}
+.taken .status{
+    border-color:#047857;
+    background:#064e3b;
+    color:#6ee7b7;
+}
+.details{
+    margin-top:16px;
+    color:#cbd5e1;
+    font-size:12px;
+    line-height:2;
+}
+.details strong{color:white}
+.time{
+    color:#fecdd3;
+    font-family:monospace;
+    font-size:14px;
+}
+.actions{
+    border-top:1px solid #334155;
+    margin-top:13px;
+    padding-top:12px;
+    display:flex;
+    gap:6px;
+}
+.take-btn{
+    flex:1;
+    border:0;
+    border-radius:8px;
+    padding:9px;
+    background:#059669;
+    color:white;
+    font-size:11px;
+    font-weight:bold;
+}
+.take-btn.undo{
+    background:#475569;
+}
+.icon-btn{
+    border:0;
+    border-radius:8px;
+    background:#0f172a;
+    color:#94a3b8;
+    width:36px;
+}
+.icon-btn:hover{color:#fb7185}
+
+.empty{
+    text-align:center;
+    padding:55px 20px;
+    color:#94a3b8;
+}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty h3{color:#e2e8f0;margin:0 0 6px}
+.empty p{font-size:12px}
+
+footer{
+    border-top:1px solid #4c0519;
+    background:#020617;
+    text-align:center;
+    padding:22px 15px;
+    color:#64748b;
+    font-size:11px;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    z-index:50;
+    background:rgba(2,6,23,.9);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:15px;
+    overflow:auto;
+}
+.modal-box{
+    width:100%;
+    max-width:450px;
+    background:#0f172a;
+    border:1px solid #881337;
+    border-radius:17px;
+    box-shadow:0 25px 70px rgba(0,0,0,.6);
+    overflow:hidden;
+}
+.modal-head{
+    padding:17px;
+    background:linear-gradient(100deg,#020617,#4c0519,#991b1b);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.modal-head h2{font-size:16px;margin:0}
+.close{
+    border:0;
+    background:transparent;
+    color:#cbd5e1;
+    font-size:24px;
+}
+.form{
+    padding:20px;
+}
+.form-group{margin-bottom:14px}
+.form-label{
+    display:block;
+    color:#cbd5e1;
+    font-size:11px;
+    font-weight:bold;
+    margin-bottom:6px;
+}
+.form input,.form select{
+    width:100%;
+    background:#020617;
+    border:1px solid #334155;
+    border-radius:8px;
+    padding:10px;
+    color:white;
+    outline:none;
+}
+.form input:focus,.form select:focus{
+    border-color:#e11d48;
+}
+.two{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+.form-actions{
+    border-top:1px solid #1e293b;
+    padding-top:15px;
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+}
+.cancel{
+    border:0;
+    background:#334155;
+    color:#cbd5e1;
+    padding:9px 15px;
+    border-radius:8px;
+}
+.save{
+    border:0;
+    background:#be123c;
+    color:white;
+    padding:9px 17px;
+    border-radius:8px;
+    font-weight:bold;
+}
+
+.install-banner{
+    position:fixed;
+    left:15px;
+    right:15px;
+    bottom:15px;
+    z-index:100;
+}
+.install-box{
+    max-width:520px;
+    margin:auto;
+    background:#0f172a;
+    border:1px solid #be123c;
+    border-radius:17px;
+    box-shadow:0 20px 60px rgba(0,0,0,.65);
+    padding:15px;
+}
+.install-content{
+    display:flex;
+    gap:12px;
+}
+.install-icon{
+    width:45px;
+    height:45px;
+    flex:none;
+    border-radius:12px;
+    background:#4c0519;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+}
+.install-box h3{margin:0;font-size:15px}
+.install-box p{
+    margin:5px 0 11px;
+    color:#94a3b8;
+    font-size:11px;
+    line-height:1.5;
+}
+.install-actions{
+    display:flex;
+    gap:7px;
+}
+.install-actions button{
+    border:0;
+    border-radius:7px;
+    padding:8px 11px;
+    font-size:11px;
+}
+.install-main{background:#be123c;color:white;font-weight:bold}
+.install-help{background:#334155;color:#cbd5e1}
+.install-dismiss{background:transparent;color:#64748b}
+
+.toast{
+    position:fixed;
+    left:50%;
+    bottom:20px;
+    transform:translateX(-50%);
+    background:#0f172a;
+    border:1px solid #475569;
+    color:white;
+    padding:10px 15px;
+    border-radius:9px;
+    font-size:12px;
+    z-index:200;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+}
+
+@media(max-width:850px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .medicine-list{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+    .header-inner{align-items:flex-start}
+    .clock-box{display:none}
+    h1{font-size:18px}
+    .stats{grid-template-columns:1fr 1fr}
+    .medicine-list{grid-template-columns:1fr}
+    .section-head{align-items:stretch;flex-direction:column}
+    .controls{width:100%}
+    .search{width:100%;flex:1}
+    .filter{flex:1}
+    .two{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="header-inner">
+    <div class="brand">
+        <div class="brand-icon">💊</div>
+        <div>
+            <h1>Peringatan Ubat Anda</h1>
+            <div class="subtitle">Urus & pantau jadual kesihatan harian anda</div>
+        </div>
+    </div>
+
+    <div class="clock-box">
+        <div id="liveClock" class="clock">00:00:00</div>
+        <div id="liveDate" class="date">Memuatkan...</div>
+    </div>
+</div>
+</header>
+
+<main class="container">
+
+<div class="warning">
+    ⚠️ <strong>AMARAN & PANDUAN PENTING:</strong><br>
+    Sistem ini hanyalah alat pembantu ingatan peribadi. Sentiasa ikut arahan dos, masa dan keselamatan yang diberikan oleh doktor atau profesional kesihatan. Jangan mengubah dos atau menghentikan ubat tanpa nasihat profesional kesihatan.
+</div>
+
+<div class="stats">
+
+    <div class="card stat">
+        <div>
+            <div class="stat-label">Jumlah Ubat Berdaftar</div>
+            <div id="statTotal" class="stat-number">0</div>
+        </div>
+        <div class="stat-icon">💊</div>
+    </div>
+
+    <div class="card stat">
+        <div>
+            <div class="stat-label">Sudah Diambil Hari Ini</div>
+            <div id="statTaken" class="stat-number green">0</div>
+        </div>
+        <div class="stat-icon">✓</div>
+    </div>
+
+    <div class="card stat">
+        <div>
+            <div class="stat-label">Belum Diambil</div>
+            <div id="statPending" class="stat-number" style="color:#fb7185">0</div>
+        </div>
+        <div class="stat-icon">⏰</div>
+    </div>
+
+    <button class="add-btn" onclick="openAddModal()">
+        ＋ Tambah Ubat Baru
+    </button>
+
+</div>
+
+<section class="section">
+
+<div class="section-head">
+    <div class="section-title">📅 Jadual Pengambilan Ubat</div>
+
+    <div class="controls">
+        <input
+            id="searchInput"
+            class="search"
+            type="search"
+            placeholder="Cari nama ubat..."
+            oninput="renderMedicines()">
+
+        <select
+            id="filterStatus"
+            class="filter"
+            onchange="renderMedicines()">
+
+            <option value="all">Semua</option>
+            <option value="pending">Belum Diambil</option>
+            <option value="taken">Sudah Diambil</option>
+
+        </select>
+    </div>
+</div>
+
+<div id="medicineList" class="medicine-list"></div>
+
+<div id="emptyState" class="empty hidden">
+    <div class="empty-icon">💊</div>
+    <h3>Tiada Rekod Ubat</h3>
+    <p>Tambah ubat pertama anda untuk mula menggunakan sistem peringatan.</p>
+    <button class="add-btn" onclick="openAddModal()">
+        ＋ Tambah Ubat
+    </button>
+</div>
+
+</section>
+
+</main>
+
+<footer>
+    Peringatan Ubat © 2026<br>
+    Data disimpan secara tempatan pada peranti anda.
+</footer>
+
+
+<!-- ADD / EDIT MODAL -->
+
+<div id="medModal" class="modal hidden">
+
+<div class="modal-box">
+
+<div class="modal-head">
+    <h2 id="modalTitle">💊 Tambah Ubat Baru</h2>
+    <button class="close" onclick="closeModal()">×</button>
+</div>
+
+<form id="medForm" class="form" onsubmit="handleFormSubmit(event)">
+
+<input type="hidden" id="medId">
+
+<div class="form-group">
+    <label class="form-label">Nama Ubat *</label>
+    <input
+        id="inputName"
+        required
+        placeholder="Contoh: Paracetamol">
+</div>
+
+<div class="form-group">
+    <label class="form-label">Dos Pengambilan *</label>
+    <input
+        id="inputDosage"
+        required
+        placeholder="Contoh: 1 biji (500mg)">
+</div>
+
+<div class="two">
+
+<div class="form-group">
+    <label class="form-label">Masa Pengambilan *</label>
+    <input id="inputTime" type="time" required>
+</div>
+
+<div class="form-group">
+    <label class="form-label">Kekerapan</label>
+
+    <select id="inputFrequency">
+
+        <option>Sekali Sehari</option>
+        <option>2 Kali Sehari</option>
+        <option>3 Kali Sehari</option>
+        <option>Setiap Hari</option>
+        <option>Mengikut Keperluan (PRN)</option>
+
+    </select>
+</div>
+
+</div>
+
+<div class="form-group">
+
+<label class="form-label">Arahan Tambahan</label>
+
+<select id="inputInstruction">
+
+<option>Selepas Makan</option>
+<option>Sebelum Makan</option>
+<option>Semasa Makan</option>
+<option>Sebelum Tidur</option>
+<option>Tiada Arahan Khas</option>
+
+</select>
+
+</div>
+
+<div class="form-actions">
+
+<button type="button" class="cancel" onclick="closeModal()">
+Batal
+</button>
+
+<button type="submit" class="save">
+Simpan Rekod
+</button>
+
+</div>
+
+</form>
+
+</div>
+</div>
+
+
+<!-- INSTALL BANNER -->
+
+<div id="installBanner" class="install-banner hidden">
+
+<div class="install-box">
+
+<div class="install-content">
+
+<div class="install-icon">📱</div>
+
+<div style="flex:1">
+
+<h3>Pasang Peringatan Ubat</h3>
+
+<p id="installText">
+Pasang aplikasi pada peranti untuk akses pantas dan penggunaan seperti aplikasi native.
+</p>
+
+<div class="install-actions">
+
+<button
+    id="installButton"
+    class="install-main"
+    onclick="installPWA()">
+    ⬇ Install
+</button>
+
+<button
+    class="install-help"
+    onclick="showInstallInstructions()">
+    Cara Install
+</button>
+
+<button
+    class="install-dismiss"
+    onclick="dismissInstallBanner()">
+    Tutup
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="toast" class="toast hidden"></div>
+
+
+<script>
+
+const STORAGE_KEY = "peringatan_ubat_data_v3";
+const DISMISS_KEY = "peringatan_ubat_install_dismissed";
+
+let medicines = [];
+let deferredPrompt = null;
+let activeAlarm = null;
+
+
+// ============================================
+// STORAGE
+// ============================================
+
+function loadData(){
+
+    try{
+
+        const data =
+            localStorage.getItem(STORAGE_KEY);
+
+        medicines = data
+            ? JSON.parse(data)
+            : [];
+
+    }catch(error){
+
+        medicines = [];
+
+    }
+
+}
+
+
+function saveData(){
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(medicines)
+    );
+
+}
+
+
+// ============================================
+// CLOCK
+// ============================================
+
+function updateClock(){
+
+    const now = new Date();
+
+    document.getElementById("liveClock")
+        .textContent =
+        now.toLocaleTimeString(
+            "ms-MY",
+            {
+                hour:"2-digit",
+                minute:"2-digit",
+                second:"2-digit",
+                hour12:true
+            }
+        );
+
+    document.getElementById("liveDate")
+        .textContent =
+        now.toLocaleDateString(
+            "ms-MY",
+            {
+                weekday:"long",
+                year:"numeric",
+                month:"long",
+                day:"numeric"
+            }
+        );
+
+}
+
+setInterval(updateClock,1000);
+updateClock();
+
+
+// ============================================
+// TODAY
+// ============================================
+
+function today(){
+
+    const d = new Date();
+
+    const year = d.getFullYear();
+
+    const month =
+        String(d.getMonth()+1).padStart(2,"0");
+
+    const day =
+        String(d.getDate()).padStart(2,"0");
+
+    return `${year}-${month}-${day}`;
+
+}
+
+
+// ============================================
+// RENDER
+// ============================================
+
+function renderMedicines(){
+
+    const container =
+        document.getElementById("medicineList");
+
+    const empty =
+        document.getElementById("emptyState");
+
+    const search =
+        document.getElementById("searchInput")
+        .value
+        .toLowerCase()
+        .trim();
+
+    const filter =
+        document.getElementById("filterStatus").value;
+
+    const todayDate = today();
+
+    let list =
+        medicines.filter(med => {
+
+            const nameMatch =
+                med.name
+                .toLowerCase()
+                .includes(search);
+
+            const taken =
+                med.lastTakenDate === todayDate;
+
+            if(filter === "taken")
+                return nameMatch && taken;
+
+            if(filter === "pending")
+                return nameMatch && !taken;
+
+            return nameMatch;
+
+        });
+
+    list.sort((a,b)=>
+        a.time.localeCompare(b.time)
+    );
+
+
+    const takenCount =
+        medicines.filter(
+            m => m.lastTakenDate === todayDate
+        ).length;
+
+
+    document.getElementById("statTotal")
+        .textContent = medicines.length;
+
+    document.getElementById("statTaken")
+        .textContent = takenCount;
+
+    document.getElementById("statPending")
+        .textContent =
+        medicines.length - takenCount;
+
+
+    if(list.length === 0){
+
+        container.innerHTML = "";
+
+        empty.classList.remove("hidden");
+
+        return;
+
+    }
+
+    empty.classList.add("hidden");
+
+
+    container.innerHTML =
+        list.map(med => {
+
+            const taken =
+                med.lastTakenDate === todayDate;
+
+            return `
+
+<div class="medicine ${taken ? "taken" : ""}">
+
+<div class="med-head">
+
+<div>
+
+<div class="med-name">
+${escapeHtml(med.name)}
+</div>
+
+<div class="badge">
+${escapeHtml(med.frequency)}
+</div>
+
+</div>
+
+<div class="status">
+${taken ? "✓ Sudah Diambil" : "⏰ Belum Diambil"}
+</div>
+
+</div>
+
+
+<div class="details">
+
+<div>
+💊 Dos:
+<strong>
+${escapeHtml(med.dosage)}
+</strong>
+</div>
+
+<div>
+⏰ Waktu:
+<strong class="time">
+${formatTime(med.time)}
+</strong>
+</div>
+
+<div>
+ℹ️ Arahan:
+${escapeHtml(
+    med.instruction ||
+    "Tiada Arahan Khas"
+)}
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+class="take-btn ${taken ? "undo" : ""}"
+onclick="toggleTaken('${med.id}')">
+
+${taken
+    ? "↩ Batal Status"
+    : "✓ Tanda Diambil"}
+
+</button>
+
+<button
+class="icon-btn"
+title="Edit"
+onclick="openEditModal('${med.id}')">
+✎
+</button>
+
+<button
+class="icon-btn"
+title="Padam"
+onclick="deleteMedicine('${med.id}')">
+🗑
+</button>
+
+</div>
+
+</div>
+
+`;
+
+        }).join("");
+
+}
+
+
+// ============================================
+// ADD MEDICINE
+// ============================================
+
+function openAddModal(){
+
+    document.getElementById("modalTitle")
+        .textContent =
+        "💊 Tambah Ubat Baru";
+
+    document.getElementById("medForm").reset();
+
+    document.getElementById("medId").value = "";
+
+    document.getElementById("medModal")
+        .classList.remove("hidden");
+
+}
+
+
+// ============================================
+// EDIT
+// ============================================
+
+function openEditModal(id){
+
+    const med =
+        medicines.find(m => m.id === id);
+
+    if(!med) return;
+
+    document.getElementById("modalTitle")
+        .textContent =
+        "✎ Kemaskini Rekod Ubat";
+
+    document.getElementById("medId").value =
+        med.id;
+
+    document.getElementById("inputName").value =
+        med.name;
+
+    document.getElementById("inputDosage").value =
+        med.dosage;
+
+    document.getElementById("inputTime").value =
+        med.time;
+
+    document.getElementById("inputFrequency").value =
+        med.frequency;
+
+    document.getElementById("inputInstruction").value =
+        med.instruction ||
+        "Tiada Arahan Khas";
+
+    document.getElementById("medModal")
+        .classList.remove("hidden");
+
+}
+
+
+function closeModal(){
+
+    document.getElementById("medModal")
+        .classList.add("hidden");
+
+}
+
+
+// ============================================
+// FORM
+// ============================================
+
+function handleFormSubmit(event){
+
+    event.preventDefault();
+
+    const id =
+        document.getElementById("medId").value;
+
+    const name =
+        document.getElementById("inputName")
+        .value.trim();
+
+    const dosage =
+        document.getElementById("inputDosage")
+        .value.trim();
+
+    const time =
+        document.getElementById("inputTime")
+        .value;
+
+    const frequency =
+        document.getElementById("inputFrequency")
+        .value;
+
+    const instruction =
+        document.getElementById("inputInstruction")
+        .value;
+
+
+    if(!name || !dosage || !time)
+        return;
+
+
+    if(id){
+
+        const index =
+            medicines.findIndex(
+                m => m.id === id
+            );
+
+        if(index !== -1){
+
+            medicines[index] = {
+                ...medicines[index],
+                name,
+                dosage,
+                time,
+                frequency,
+                instruction
+            };
+
+        }
+
+    }else{
+
+        medicines.push({
+
+            id:
+                "med_" +
+                Date.now(),
+
+            name,
+
+            dosage,
+
+            time,
+
+            frequency,
+
+            instruction,
+
+            lastTakenDate:null,
+
+            notifiedDates:{}
+
+        });
+
+    }
+
+
+    saveData();
+
+    renderMedicines();
+
+    closeModal();
+
+    showToast("Rekod ubat berjaya disimpan.");
+
+}
+
+
+// ============================================
+// TAKEN
+// ============================================
+
+function toggleTaken(id){
+
+    const med =
+        medicines.find(
+            m => m.id === id
+        );
+
+    if(!med) return;
+
+
+    const current =
+        today();
+
+
+    if(
+        med.lastTakenDate === current
+    ){
+
+        med.lastTakenDate = null;
+
+        showToast(
+            "Status pengambilan dibatalkan."
+        );
+
+    }else{
+
+        med.lastTakenDate = current;
+
+        showToast(
+            "Ubat ditandakan sudah diambil."
+        );
+
+    }
+
+
+    saveData();
+
+    renderMedicines();
+
+}
+
+
+// ============================================
+// DELETE
+// ============================================
+
+function deleteMedicine(id){
+
+    const med =
+        medicines.find(
+            m => m.id === id
+        );
+
+    if(!med) return;
+
+
+    if(
+        confirm(
+            `Padam rekod "${med.name}"?`
+        )
+    ){
+
+        medicines =
+            medicines.filter(
+                m => m.id !== id
+            );
+
+        saveData();
+
+        renderMedicines();
+
+        showToast("Rekod ubat dipadam.");
+
+    }
+
+}
+
+
+// ============================================
+// ALARM
+// ============================================
+
+function checkAlarms(){
+
+    const now = new Date();
+
+    const currentMinutes =
+        now.getHours()*60 +
+        now.getMinutes();
+
+    const todayDate =
+        today();
+
+
+    medicines.forEach(med => {
+
+        if(
+            med.lastTakenDate ===
+            todayDate
+        )
+            return;
+
+
+        if(!med.time)
+            return;
+
+
+        const parts =
+            med.time.split(":");
+
+        const medMinutes =
+            Number(parts[0])*60 +
+            Number(parts[1]);
+
+
+        const diff =
+            medMinutes -
+            currentMinutes;
+
+
+        if(
+            diff >= 0 &&
+            diff <= 5
+        ){
+
+            if(!med.notifiedDates)
+                med.notifiedDates = {};
+
+
+            const key =
+                todayDate +
+                "_" +
+                med.time;
+
+
+            if(
+                !med.notifiedDates[key]
+            ){
+
+                med.notifiedDates[key] =
+                    true;
+
+                saveData();
+
+                showAlarm(
+                    med,
+                    diff
+                );
+
+            }
+
+        }
+
+    });
+
+}
+
+
+setInterval(checkAlarms,10000);
+
+
+// ============================================
+// ALARM
+// ============================================
+
+function showAlarm(med,diff){
+
+    activeAlarm = med.id;
+
+    let message =
+        diff > 0
+        ? `💊 ${med.name} — ${diff} minit lagi`
+        : `🚨 Masa ambil ${med.name} sekarang!`;
+
+    showToast(message);
+
+    if(
+        "Notification" in window &&
+        Notification.permission === "granted"
+    ){
+
+        try{
+
+            new Notification(
+                diff > 0
+                ? "Peringatan Ubat"
+                : "Masa Ambil Ubat",
+                {
+                    body:
+                    `${med.name} — Dos: ${med.dosage}`,
+                    icon:
+                    "./icons/icon-192.png",
+                    tag:
+                    "medicine-" + med.id
+                }
+            );
+
+        }catch(e){}
+
+    }
+
+}
+
+
+// ============================================
+// NOTIFICATION
+// ============================================
+
+async function requestNotifications(){
+
+    if(
+        !("Notification" in window)
+    ){
+
+        showToast(
+            "Browser ini tidak menyokong notifikasi."
+        );
+
+        return;
+
+    }
+
+
+    try{
+
+        const permission =
+            await Notification.requestPermission();
+
+        if(permission === "granted"){
+
+            showToast(
+                "Notifikasi berjaya diaktifkan."
+            );
+
+        }else{
+
+            showToast(
+                "Notifikasi belum dibenarkan."
+            );
+
+        }
+
+    }catch(error){}
+
+}
+
+
+// ============================================
+// PWA INSTALL
+// ============================================
+
+window.addEventListener(
+    "beforeinstallprompt",
+    event => {
+
+        event.preventDefault();
+
+        deferredPrompt = event;
+
+        showInstallBanner();
+
+    }
+);
+
+
+function isStandalone(){
+
+    return (
+        window.matchMedia(
+            "(display-mode: standalone)"
+        ).matches ||
+        window.navigator.standalone === true
+    );
+
+}
+
+
+function showInstallBanner(){
+
+    if(isStandalone())
+        return;
+
+
+    if(
+        localStorage.getItem(
+            DISMISS_KEY
+        ) === "true"
+    )
+        return;
+
+
+    document.getElementById(
+        "installBanner"
+    ).classList.remove("hidden");
+
+}
+
+
+function hideInstallBanner(){
+
+    document.getElementById(
+        "installBanner"
+    ).classList.add("hidden");
+
+}
+
+
+async function installPWA(){
+
+    if(!deferredPrompt){
+
+        showInstallInstructions();
+
+        return;
+
+    }
+
+
+    deferredPrompt.prompt();
+
+    try{
+
+        await deferredPrompt.userChoice;
+
+    }catch(e){}
+
+
+    deferredPrompt = null;
+
+    hideInstallBanner();
+
+}
+
+
+window.addEventListener(
+    "appinstalled",
+    () => {
+
+        hideInstallBanner();
+
+        localStorage.removeItem(
+            DISMISS_KEY
+        );
+
+        showToast(
+            "Peringatan Ubat telah dipasang!"
+        );
+
+    }
+);
+
+
+function dismissInstallBanner(){
+
+    localStorage.setItem(
+        DISMISS_KEY,
+        "true"
+    );
+
+    hideInstallBanner();
+
+}
+
+
+// ============================================
+// MANUAL INSTALL
+// ============================================
+
+function showInstallInstructions(){
+
+    const ua =
+        navigator.userAgent.toLowerCase();
+
+
+    const ios =
+        /iphone|ipad|ipod/.test(ua);
+
+
+    const macSafari =
+        /macintosh/.test(ua) &&
+        /safari/.test(ua) &&
+        !/chrome|crios|edgios/.test(ua);
+
+
+    if(ios){
+
+        alert(
+`📱 CARA INSTALL
+
+1. Tekan Share / Kongsi
+2. Pilih "Add to Home Screen"
+3. Tekan "Add"
+
+Kemudian buka aplikasi melalui ikon Peringatan Ubat di Home Screen.`
+        );
+
+        return;
+
+    }
+
+
+    if(macSafari){
+
+        alert(
+`💻 CARA INSTALL
+
+Pada Safari pilih:
+
+File → Add to Dock
+
+Kemudian buka aplikasi melalui Dock.`
+        );
+
+        return;
+
+    }
+
+
+    alert(
+`📲 CARA INSTALL
+
+Jika browser menyokong PWA:
+
+1. Tekan Install / Pasang
+2. Pilih Install App
+3. Sahkan pemasangan
+
+Jika pilihan Install belum muncul, cuba buka semula halaman selepas beberapa saat.`
+    );
+
+}
+
+
+// ============================================
+// TOAST
+// ============================================
+
+let toastTimer = null;
+
+function showToast(message){
+
+    const toast =
+        document.getElementById("toast");
+
+    toast.textContent =
+        message;
+
+    toast.classList.remove(
+        "hidden"
+    );
+
+    clearTimeout(toastTimer);
+
+    toastTimer =
+        setTimeout(
+            () =>
+                toast.classList.add(
+                    "hidden"
+                ),
+            3000
+        );
+
+}
+
+
+// ============================================
+// ESCAPE HTML
+// ============================================
+
+function escapeHtml(value){
+
+    if(value === null ||
+       value === undefined)
+        return "";
+
+    return String(value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+// ============================================
+// FORMAT TIME
+// ============================================
+
+function formatTime(time){
+
+    if(!time)
+        return "";
+
+    const parts =
+        time.split(":");
+
+    let hour =
+        Number(parts[0]);
+
+    const minute =
+        parts[1];
+
+    const period =
+        hour >= 12
+        ? "PM"
+        : "AM";
+
+    hour =
+        hour % 12 || 12;
+
+    return (
+        String(hour).padStart(2,"0") +
+        ":" +
+        minute +
+        " " +
+        period
+    );
+
+}
+
+
+// ============================================
+// SERVICE WORKER
+// ============================================
+
+if(
+    "serviceWorker" in navigator
+){
+
+    window.addEventListener(
+        "load",
+        async () => {
+
+            try{
+
+                const registration =
+                    await navigator.serviceWorker.register(
+                        "./sw.js"
+                    );
+
+                console.log(
+                    "PWA Service Worker aktif:",
+                    registration.scope
+                );
+
+                registration.update();
+
+            }catch(error){
+
+                console.error(
+                    "Service Worker gagal:",
+                    error
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+// ============================================
+// INITIALIZE
+// ============================================
+
+loadData();
+
+renderMedicines();
+
+setTimeout(
+    checkAlarms,
+    1500
+);
+
+
+// Cuba tunjuk install banner
+// untuk browser yang belum install.
+
+setTimeout(
+    () => {
+
+        if(!isStandalone()){
+
+            showInstallBanner();
+
+        }
+
+    },
+    1500
+);
+
+</script>
+
+</body>
+</html>
