@@ -1,0 +1,20 @@
+{
+  "name": "Peringatan Ubat",
+  "short_name": "Ubat",
+  "description": "Sistem Peringatan Ubat Peribadi",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#881337",
+  "orientation": "portrait",
+  "lang": "ms",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/883/883407.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
