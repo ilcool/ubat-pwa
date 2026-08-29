@@ -1766,5 +1766,504 @@ if ('serviceWorker' in navigator) {
     });
 }
 </script>
+    <!-- =====================================================
+     PWA INSTALL UX V2
+===================================================== -->
+
+<style>
+    #pwaInstallBanner {
+        position: fixed;
+        left: 16px;
+        right: 16px;
+        bottom: 18px;
+        z-index: 99999;
+        display: none;
+        background: linear-gradient(135deg, #450a0a, #881337, #991b1b);
+        color: white;
+        border: 1px solid rgba(244, 63, 94, .45);
+        border-radius: 18px;
+        padding: 16px;
+        box-shadow: 0 20px 50px rgba(0,0,0,.45);
+        backdrop-filter: blur(15px);
+        max-width: 520px;
+        margin: auto;
+    }
+
+    #pwaInstallBanner.show {
+        display: block;
+        animation: pwaSlideUp .35s ease-out;
+    }
+
+    @keyframes pwaSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .pwa-install-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .pwa-install-icon {
+        width: 46px;
+        height: 46px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        background: rgba(255,255,255,.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+    .pwa-install-content {
+        flex: 1;
+    }
+
+    .pwa-install-title {
+        font-weight: 700;
+        font-size: 15px;
+        margin-bottom: 4px;
+    }
+
+    .pwa-install-text {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #fecdd3;
+    }
+
+    .pwa-install-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .pwa-btn {
+        border: 0;
+        border-radius: 10px;
+        padding: 9px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .pwa-btn-install {
+        background: #f43f5e;
+        color: white;
+        flex: 1;
+    }
+
+    .pwa-btn-install:hover {
+        background: #e11d48;
+    }
+
+    .pwa-btn-close {
+        background: rgba(255,255,255,.1);
+        color: #fecdd3;
+    }
+
+    #pwaInstallInstructions {
+        display: none;
+        margin-top: 12px;
+        padding: 12px;
+        border-radius: 12px;
+        background: rgba(0,0,0,.25);
+        font-size: 12px;
+        line-height: 1.6;
+        color: #ffe4e6;
+    }
+
+    #pwaInstallInstructions strong {
+        color: white;
+    }
+</style>
+
+<!-- PWA Install Banner -->
+<div id="pwaInstallBanner">
+
+    <div class="pwa-install-row">
+
+        <div class="pwa-install-icon">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+        </div>
+
+        <div class="pwa-install-content">
+
+            <div class="pwa-install-title">
+                Pasang Peringatan Ubat
+            </div>
+
+            <div id="pwaInstallText" class="pwa-install-text">
+                Pasang aplikasi ke peranti untuk akses lebih pantas dan penggunaan offline.
+            </div>
+
+            <div id="pwaInstallInstructions">
+
+                <div id="pwaAndroidInstructions">
+                    <strong>Android / Chrome / Edge</strong><br>
+                    Tekan <strong>INSTALL</strong> untuk memasang aplikasi ke Home Screen.
+                </div>
+
+                <div id="pwaIOSInstructions" style="display:none;">
+                    <strong>iPhone / iPad</strong><br>
+                    1. Tekan butang <strong>Share</strong> ↗️<br>
+                    2. Pilih <strong>Add to Home Screen</strong><br>
+                    3. Tekan <strong>Add</strong>
+                </div>
+
+                <div id="pwaMacInstructions" style="display:none;">
+                    <strong>Safari macOS</strong><br>
+                    Pilih <strong>File → Add to Dock</strong>.
+                </div>
+
+            </div>
+
+            <div class="pwa-install-actions">
+
+                <button
+                    id="pwaInstallButton"
+                    class="pwa-btn pwa-btn-install"
+                    type="button">
+                    <i class="fa-solid fa-download"></i>
+                    INSTALL
+                </button>
+
+                <button
+                    id="pwaHowButton"
+                    class="pwa-btn pwa-btn-close"
+                    type="button">
+                    CARA INSTALL
+                </button>
+
+                <button
+                    id="pwaCloseButton"
+                    class="pwa-btn pwa-btn-close"
+                    type="button">
+                    TUTUP
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+/* =====================================================
+   PWA INSTALL UX V2
+===================================================== */
+
+(function () {
+
+    let deferredInstallPrompt = null;
+
+    const banner = document.getElementById("pwaInstallBanner");
+    const installButton = document.getElementById("pwaInstallButton");
+    const howButton = document.getElementById("pwaHowButton");
+    const closeButton = document.getElementById("pwaCloseButton");
+    const instructions = document.getElementById("pwaInstallInstructions");
+
+    const androidInstructions =
+        document.getElementById("pwaAndroidInstructions");
+
+    const iosInstructions =
+        document.getElementById("pwaIOSInstructions");
+
+    const macInstructions =
+        document.getElementById("pwaMacInstructions");
+
+    if (!banner) return;
+
+
+    /* ---------------------------------------------
+       DETECT STANDALONE / ALREADY INSTALLED
+    --------------------------------------------- */
+
+    function isStandalone() {
+
+        return (
+            window.matchMedia("(display-mode: standalone)").matches ||
+            window.navigator.standalone === true
+        );
+
+    }
+
+
+    /* ---------------------------------------------
+       DETECT DEVICE
+    --------------------------------------------- */
+
+    const ua = navigator.userAgent || "";
+
+    const isIOS =
+        /iPad|iPhone|iPod/.test(ua) ||
+        (navigator.platform === "MacIntel" &&
+         navigator.maxTouchPoints > 1);
+
+    const isMacSafari =
+        /Macintosh/.test(ua) &&
+        /Safari/.test(ua) &&
+        !/Chrome|CriOS|Edg/.test(ua);
+
+
+    /* ---------------------------------------------
+       SHOW BANNER
+    --------------------------------------------- */
+
+    function showBanner() {
+
+        if (isStandalone()) return;
+
+        if (localStorage.getItem("pwaInstallDismissed") === "true") {
+            return;
+        }
+
+        banner.classList.add("show");
+
+    }
+
+
+    /* ---------------------------------------------
+       CLOSE / DISMISS
+    --------------------------------------------- */
+
+    closeButton.addEventListener("click", function () {
+
+        banner.classList.remove("show");
+
+        localStorage.setItem(
+            "pwaInstallDismissed",
+            "true"
+        );
+
+    });
+
+
+    /* ---------------------------------------------
+       HOW TO INSTALL
+    --------------------------------------------- */
+
+    howButton.addEventListener("click", function () {
+
+        instructions.style.display =
+            instructions.style.display === "block"
+                ? "none"
+                : "block";
+
+    });
+
+
+    /* ---------------------------------------------
+       CHROME / EDGE INSTALL
+    --------------------------------------------- */
+
+    window.addEventListener("beforeinstallprompt", function (event) {
+
+        event.preventDefault();
+
+        deferredInstallPrompt = event;
+
+        installButton.style.display = "block";
+
+        androidInstructions.style.display = "block";
+        iosInstructions.style.display = "none";
+        macInstructions.style.display = "none";
+
+        showBanner();
+
+    });
+
+
+    /* ---------------------------------------------
+       INSTALL BUTTON
+    --------------------------------------------- */
+
+    installButton.addEventListener("click", async function () {
+
+        if (deferredInstallPrompt) {
+
+            deferredInstallPrompt.prompt();
+
+            const result =
+                await deferredInstallPrompt.userChoice;
+
+            deferredInstallPrompt = null;
+
+            if (result.outcome === "accepted") {
+
+                banner.classList.remove("show");
+
+                localStorage.removeItem(
+                    "pwaInstallDismissed"
+                );
+
+            }
+
+            return;
+        }
+
+
+        /* iOS */
+
+        if (isIOS) {
+
+            androidInstructions.style.display = "none";
+            iosInstructions.style.display = "block";
+            macInstructions.style.display = "none";
+
+            instructions.style.display = "block";
+
+            return;
+
+        }
+
+
+        /* macOS Safari */
+
+        if (isMacSafari) {
+
+            androidInstructions.style.display = "none";
+            iosInstructions.style.display = "none";
+            macInstructions.style.display = "block";
+
+            instructions.style.display = "block";
+
+            return;
+
+        }
+
+    });
+
+
+    /* ---------------------------------------------
+       iOS
+    --------------------------------------------- */
+
+    if (isIOS && !isStandalone()) {
+
+        installButton.style.display = "block";
+
+        androidInstructions.style.display = "none";
+        iosInstructions.style.display = "block";
+        macInstructions.style.display = "none";
+
+        showBanner();
+
+    }
+
+
+    /* ---------------------------------------------
+       macOS SAFARI
+    --------------------------------------------- */
+
+    if (isMacSafari && !isStandalone()) {
+
+        installButton.style.display = "block";
+
+        androidInstructions.style.display = "none";
+        iosInstructions.style.display = "none";
+        macInstructions.style.display = "block";
+
+        showBanner();
+
+    }
+
+
+    /* ---------------------------------------------
+       INSTALLED EVENT
+    --------------------------------------------- */
+
+    window.addEventListener("appinstalled", function () {
+
+        banner.classList.remove("show");
+
+        localStorage.setItem(
+            "pwaInstalled",
+            "true"
+        );
+
+    });
+
+
+    /* ---------------------------------------------
+       SERVICE WORKER AUTO UPDATE
+    --------------------------------------------- */
+
+    if ("serviceWorker" in navigator) {
+
+        navigator.serviceWorker.register("./sw.js")
+            .then(function (registration) {
+
+                console.log(
+                    "PWA Service Worker aktif"
+                );
+
+                registration.addEventListener(
+                    "updatefound",
+                    function () {
+
+                        const newWorker =
+                            registration.installing;
+
+                        if (!newWorker) return;
+
+                        newWorker.addEventListener(
+                            "statechange",
+                            function () {
+
+                                if (
+                                    newWorker.state ===
+                                    "installed" &&
+                                    navigator.serviceWorker.controller
+                                ) {
+
+                                    newWorker.postMessage({
+                                        type:
+                                        "SKIP_WAITING"
+                                    });
+
+                                }
+
+                            }
+                        );
+
+                    }
+                );
+
+            })
+            .catch(function (error) {
+
+                console.error(
+                    "PWA Service Worker gagal:",
+                    error
+                );
+
+            });
+
+    }
+
+
+    /* ---------------------------------------------
+       HIDE WHEN ALREADY STANDALONE
+    --------------------------------------------- */
+
+    if (isStandalone()) {
+
+        banner.classList.remove("show");
+
+    }
+
+})();
+</script>
 </body>
 </html>
