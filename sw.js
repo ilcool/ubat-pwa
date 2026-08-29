@@ -1,4 +1,4 @@
-const CACHE_NAME = "ubat-pwa-v2";
+const CACHE_NAME = 'ubat-pwa-v3';
 
 const APP_SHELL = [
   "./",
