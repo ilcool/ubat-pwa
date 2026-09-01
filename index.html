@@ -1419,6 +1419,34 @@ function sendMedicineNotification(med, diffMin) {
 }    
 
 // ============================================
+// TEST NOTIFICATION
+// ============================================
+
+function testMedicineNotification() {
+
+    if (!("Notification" in window)) {
+        showToast("Browser tidak menyokong notifikasi.");
+        return;
+    }
+
+    if (Notification.permission !== "granted") {
+        showToast("Sila aktifkan notifikasi dahulu.");
+        requestNotifications();
+        return;
+    }
+
+    const testMedicine = {
+        id: "test-notification",
+        name: "Ujian Peringatan Ubat",
+        dosage: "1 biji",
+        time: "Sekarang"
+    };
+
+    sendMedicineNotification(testMedicine, 5);
+
+    showToast("Notifikasi ujian telah dihantar 🔔");
+}    
+// ============================================
 // PWA INSTALL
 // ============================================
 
