@@ -1409,6 +1409,38 @@ async function requestNotifications(){
 
 }
 
+function sendMedicineNotification(med, diffMin) {
+
+    if (!('serviceWorker' in navigator)) {
+        return;
+    }
+
+    navigator.serviceWorker.ready.then(registration => {
+
+        const title = diffMin > 0
+            ? `Peringatan Ubat: ${med.name}`
+            : `Masa Ambil Ubat: ${med.name}`;
+
+        const body = diffMin > 0
+            ? `Dos: ${med.dosage} • ${diffMin} minit lagi`
+            : `Dos: ${med.dosage} • Waktu pengambilan sekarang`;
+
+        if (registration.active) {
+
+            registration.active.postMessage({
+                type: 'MEDICINE_NOTIFICATION',
+                title: title,
+                body: body,
+                medicineId: med.id,
+                tag: `medicine-${med.id}-${new Date().toISOString().split('T')[0]}-${med.time}`
+            });
+
+        }
+
+    }).catch(error => {
+        console.error('Gagal menghantar notifikasi PWA:', error);
+    });
+}    
 
 // ============================================
 // PWA INSTALL
