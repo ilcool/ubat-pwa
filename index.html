@@ -1339,31 +1339,7 @@ function showAlarm(med,diff){
 
     showToast(message);
 
-    if(
-        "Notification" in window &&
-        Notification.permission === "granted"
-    ){
-
-        try{
-
-            new Notification(
-                diff > 0
-                ? "Peringatan Ubat"
-                : "Masa Ambil Ubat",
-                {
-                    body:
-                    `${med.name} — Dos: ${med.dosage}`,
-                    icon:
-                    "./icons/icon-192.png",
-                    tag:
-                    "medicine-" + med.id
-                }
-            );
-
-        }catch(e){}
-
-    }
-
+    sendMedicineNotification(med, diff);
 }
 
 
