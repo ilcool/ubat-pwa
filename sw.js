@@ -87,8 +87,8 @@ self.addEventListener('message', event => {
             data.title || 'Peringatan Ubat',
             {
                 body: data.body || 'Masa untuk mengambil ubat.',
-                icon: './icon-192.png',
-                badge: './icon-192.png',
+                icon: './icons/icon-192.png',
+                badge: './icons/icon-192.png',
                 tag: data.tag || 'medicine-reminder',
                 renotify: true,
                 vibrate: [300, 150, 300, 150, 500],
