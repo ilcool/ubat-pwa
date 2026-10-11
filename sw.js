@@ -73,15 +73,16 @@ self.addEventListener('fetch', event => {
     );
 });
 
-// RECEIVE MESSAGE FROM INDEX.HTML
+
+ // RECEIVE MESSAGE FROM INDEX.HTML
 self.addEventListener('message', event => {
+    if (!event.data || event.data.type !== 'MEDICINE_NOTIFICATION') {
+        return;
+    }
 
-    if (!event.data) return;
+    const data = event.data;
 
-    if (event.data.type === 'MEDICINE_NOTIFICATION') {
-
-        const data = event.data;
-
+    event.waitUntil(
         self.registration.showNotification(
             data.title || 'Peringatan Ubat',
             {
@@ -107,8 +108,8 @@ self.addEventListener('message', event => {
                     }
                 ]
             }
-        );
-    }
+        )
+    );
 });
 
 // NOTIFICATION CLICK
